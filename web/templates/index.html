@@ -1,0 +1,333 @@
+{{ define "index.html" }}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NearNow — Discover Events Near You</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0f0f13;
+      --surface: #1a1a24;
+      --surface2: #22222f;
+      --border: #2e2e3e;
+      --accent: #6c63ff;
+      --accent2: #ff6584;
+      --green: #00d9a3;
+      --yellow: #ffd166;
+      --text: #f0f0ff;
+      --muted: #7070a0;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body { background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; min-height:100vh; }
+
+    /* NAV */
+    nav { display:flex; justify-content:space-between; align-items:center; padding:1.2rem 2rem; border-bottom:1px solid var(--border); background:rgba(15,15,19,0.95); backdrop-filter:blur(10px); position:sticky; top:0; z-index:100; }
+    .nav-logo { font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:800; background:linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .nav-tag { font-size:0.7rem; color:var(--muted); letter-spacing:0.1em; }
+
+    /* HERO */
+    .hero { padding:4rem 2rem 2rem; text-align:center; position:relative; overflow:hidden; }
+    .hero::before { content:''; position:absolute; inset:0; background:radial-gradient(ellipse at 50% 0%, rgba(108,99,255,0.15) 0%, transparent 60%); pointer-events:none; }
+    .hero-title { font-family:'Syne',sans-serif; font-size:clamp(2.5rem,7vw,5rem); font-weight:800; line-height:1.1; margin-bottom:1rem; }
+    .hero-title span { background:linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .hero-sub { color:var(--muted); font-size:1.1rem; margin-bottom:2.5rem; max-width:500px; margin-left:auto; margin-right:auto; line-height:1.6; }
+
+    /* SEARCH BAR */
+    .search-bar { display:flex; gap:0.8rem; max-width:700px; margin:0 auto 1.5rem; flex-wrap:wrap; justify-content:center; }
+    .search-input { flex:1; min-width:200px; background:var(--surface); border:1px solid var(--border); border-radius:12px; padding:0.85rem 1.2rem; color:var(--text); font-size:0.95rem; outline:none; transition:border-color 0.2s; font-family:'Inter',sans-serif; }
+    .search-input:focus { border-color:var(--accent); }
+    .search-input::placeholder { color:var(--muted); }
+    .btn-search { padding:0.85rem 2rem; background:linear-gradient(135deg, var(--accent), var(--accent2)); border:none; border-radius:12px; color:white; font-size:0.95rem; font-weight:600; cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; white-space:nowrap; }
+    .btn-search:hover { transform:translateY(-2px); box-shadow:0 8px 25px rgba(108,99,255,0.4); }
+    .btn-locate { padding:0.85rem 1.2rem; background:var(--surface); border:1px solid var(--border); border-radius:12px; color:var(--text); font-size:0.95rem; cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; }
+    .btn-locate:hover { border-color:var(--accent); color:var(--accent); }
+
+    /* FILTERS */
+    .filters { display:flex; gap:0.6rem; justify-content:center; flex-wrap:wrap; margin-bottom:3rem; padding:0 2rem; }
+    .filter-btn { padding:0.5rem 1.2rem; background:var(--surface); border:1px solid var(--border); border-radius:20px; color:var(--muted); font-size:0.8rem; cursor:pointer; transition:all 0.2s; font-family:'Inter',sans-serif; }
+    .filter-btn:hover { border-color:var(--accent); color:var(--accent); }
+    .filter-btn.active { background:var(--accent); border-color:var(--accent); color:white; }
+
+    /* STATS BAR */
+    .stats-bar { display:flex; justify-content:center; gap:2rem; padding:1rem 2rem; border-top:1px solid var(--border); border-bottom:1px solid var(--border); margin-bottom:2rem; flex-wrap:wrap; }
+    .stat { text-align:center; }
+    .stat-num { font-family:'Syne',sans-serif; font-size:1.5rem; font-weight:700; color:var(--accent); }
+    .stat-label { font-size:0.7rem; color:var(--muted); text-transform:uppercase; letter-spacing:0.1em; }
+
+    /* EVENTS GRID */
+    .events-section { max-width:1200px; margin:0 auto; padding:0 2rem 4rem; }
+    .section-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:1.5rem; }
+    .section-title { font-family:'Syne',sans-serif; font-size:1.3rem; font-weight:700; }
+    .section-meta { font-size:0.8rem; color:var(--muted); }
+
+    .events-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(320px,1fr)); gap:1.5rem; }
+
+    /* EVENT CARD */
+    .event-card { background:var(--surface); border:1px solid var(--border); border-radius:16px; overflow:hidden; transition:all 0.3s; cursor:pointer; text-decoration:none; color:inherit; display:block; }
+    .event-card:hover { border-color:var(--accent); transform:translateY(-4px); box-shadow:0 16px 40px rgba(108,99,255,0.2); }
+    .card-image { width:100%; height:160px; object-fit:cover; background:var(--surface2); display:flex; align-items:center; justify-content:center; font-size:3rem; }
+    .card-image img { width:100%; height:100%; object-fit:cover; }
+    .card-body { padding:1.2rem; }
+    .card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:0.5rem; }
+    .card-category { font-size:0.65rem; letter-spacing:0.1em; text-transform:uppercase; color:var(--accent); font-weight:600; }
+    .card-hot { font-size:0.65rem; background:rgba(255,101,132,0.15); color:var(--accent2); padding:0.2rem 0.5rem; border-radius:10px; border:1px solid rgba(255,101,132,0.3); }
+    .card-title { font-weight:600; font-size:1rem; margin-bottom:0.5rem; line-height:1.3; }
+    .card-venue { font-size:0.8rem; color:var(--muted); margin-bottom:0.8rem; display:flex; align-items:center; gap:0.3rem; }
+    .card-footer { display:flex; justify-content:space-between; align-items:center; }
+    .card-time { font-size:0.78rem; color:var(--muted); }
+    .card-price { font-size:0.85rem; font-weight:600; }
+    .card-price.free { color:var(--green); }
+    .card-price.paid { color:var(--yellow); }
+    .card-attending { font-size:0.75rem; color:var(--muted); display:flex; align-items:center; gap:0.3rem; }
+    .card-source { font-size:0.65rem; color:var(--muted); margin-top:0.5rem; text-align:right; }
+
+    /* LOADING */
+    .loading { text-align:center; padding:4rem; color:var(--muted); }
+    .spinner { width:40px; height:40px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 1rem; }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    /* EMPTY */
+    .empty { text-align:center; padding:4rem; color:var(--muted); }
+    .empty-icon { font-size:3rem; margin-bottom:1rem; }
+
+    /* RADIUS */
+    .radius-wrap { display:flex; align-items:center; gap:1rem; justify-content:center; margin-bottom:1rem; font-size:0.85rem; color:var(--muted); }
+    input[type=range] { accent-color:var(--accent); width:150px; }
+
+    @media(max-width:600px) {
+      .search-bar { flex-direction:column; }
+      .btn-search, .btn-locate { width:100%; }
+      nav { padding:1rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">NearNow</div>
+  <div class="nav-tag">Discover what's happening around you</div>
+</nav>
+
+<div class="hero">
+  <h1 class="hero-title">Events <span>Near You</span><br/>Right Now</h1>
+  <p class="hero-sub">Real-time event discovery — concerts, food, tech meetups, sports and more. All in one place.</p>
+
+  <div class="search-bar">
+    <input type="text" class="search-input" id="searchInput" placeholder="Search events, venues, artists..." />
+    <button class="btn-locate" id="locateBtn">📍 Use My Location</button>
+    <button class="btn-search" id="searchBtn">Search</button>
+  </div>
+
+  <div class="radius-wrap">
+    <span>Radius:</span>
+    <input type="range" id="radiusSlider" min="1" max="50" value="10" />
+    <span id="radiusLabel">10 miles</span>
+  </div>
+
+  <div class="filters">
+    <button class="filter-btn active" data-cat="">All</button>
+    <button class="filter-btn" data-cat="Music">🎵 Music</button>
+    <button class="filter-btn" data-cat="Food & Drink">🍔 Food & Drink</button>
+    <button class="filter-btn" data-cat="Tech">💻 Tech</button>
+    <button class="filter-btn" data-cat="Sports">⚽ Sports</button>
+    <button class="filter-btn" data-cat="Arts">🎨 Arts</button>
+    <button class="filter-btn" data-cat="Networking">🤝 Networking</button>
+    <button class="filter-btn" data-cat="Comedy">😂 Comedy</button>
+    <button class="filter-btn" data-cat="Festival">🎪 Festival</button>
+    <button class="filter-btn" data-free="true">🆓 Free Only</button>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat"><div class="stat-num" id="totalEvents">0</div><div class="stat-label">Events Found</div></div>
+  <div class="stat"><div class="stat-num" id="totalFree">0</div><div class="stat-label">Free Events</div></div>
+  <div class="stat"><div class="stat-num" id="totalHot">0</div><div class="stat-label">Trending</div></div>
+  <div class="stat"><div class="stat-num" id="cacheStatus">—</div><div class="stat-label">Data Source</div></div>
+</div>
+
+<div class="events-section">
+  <div class="section-header">
+    <div class="section-title" id="sectionTitle">Nearby Events</div>
+    <div class="section-meta" id="sectionMeta"></div>
+  </div>
+  <div id="eventsContainer">
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Discovering events near you...</p>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentLat = 25.7617;
+let currentLng = -80.1918;
+let currentCategory = '';
+let freeOnly = false;
+let currentRadius = 10;
+
+// Auto load on start
+window.addEventListener('load', () => {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        currentLat = pos.coords.latitude;
+        currentLng = pos.coords.longitude;
+        fetchEvents();
+      },
+      () => fetchEvents() // fallback to Miami
+    );
+  } else {
+    fetchEvents();
+  }
+});
+
+// Locate button
+document.getElementById('locateBtn').addEventListener('click', () => {
+  if (!navigator.geolocation) return;
+  document.getElementById('locateBtn').textContent = '⏳ Locating...';
+  navigator.geolocation.getCurrentPosition(
+    pos => {
+      currentLat = pos.coords.latitude;
+      currentLng = pos.coords.longitude;
+      document.getElementById('locateBtn').textContent = '📍 Located!';
+      setTimeout(() => document.getElementById('locateBtn').textContent = '📍 Use My Location', 2000);
+      fetchEvents();
+    },
+    () => {
+      document.getElementById('locateBtn').textContent = '📍 Use My Location';
+    }
+  );
+});
+
+// Search button
+document.getElementById('searchBtn').addEventListener('click', fetchEvents);
+document.getElementById('searchInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') fetchEvents();
+});
+
+// Radius slider
+document.getElementById('radiusSlider').addEventListener('input', e => {
+  currentRadius = e.target.value;
+  document.getElementById('radiusLabel').textContent = currentRadius + ' miles';
+});
+document.getElementById('radiusSlider').addEventListener('change', fetchEvents);
+
+// Filter buttons
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (btn.dataset.free) {
+      freeOnly = !freeOnly;
+      btn.classList.toggle('active', freeOnly);
+    } else {
+      document.querySelectorAll('.filter-btn[data-cat]').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentCategory = btn.dataset.cat;
+    }
+    fetchEvents();
+  });
+});
+
+async function fetchEvents() {
+  showLoading();
+  const keyword = document.getElementById('searchInput').value;
+  const url = `/api/events?lat=${currentLat}&lng=${currentLng}&radius=${currentRadius}&category=${currentCategory}&free=${freeOnly}&q=${keyword}`;
+
+  try {
+    const start = Date.now();
+    const res = await fetch(url);
+    const data = await res.json();
+    const elapsed = Date.now() - start;
+
+    updateStats(data, elapsed);
+    renderEvents(data.events || []);
+  } catch(e) {
+    showError();
+  }
+}
+
+function updateStats(data, elapsed) {
+  const events = data.events || [];
+  document.getElementById('totalEvents').textContent = data.total || 0;
+  document.getElementById('totalFree').textContent = events.filter(e => e.price.free).length;
+  document.getElementById('totalHot').textContent = events.filter(e => e.hot).length;
+  document.getElementById('cacheStatus').textContent = data.cache_hit ? '⚡ Cache' : '🌐 Live';
+  document.getElementById('sectionMeta').textContent = `${elapsed}ms response time`;
+}
+
+function renderEvents(events) {
+  const container = document.getElementById('eventsContainer');
+
+  if (!events || events.length === 0) {
+    container.innerHTML = `
+      <div class="empty">
+        <div class="empty-icon">🔍</div>
+        <p>No events found nearby. Try increasing your search radius!</p>
+      </div>`;
+    return;
+  }
+
+  document.getElementById('sectionTitle').textContent =
+    currentCategory ? currentCategory + ' Events' : 'Nearby Events';
+
+  container.innerHTML = `<div class="events-grid">${events.map(renderCard).join('')}</div>`;
+}
+
+function renderCard(event) {
+  const price = event.price.free
+    ? '<span class="card-price free">FREE</span>'
+    : `<span class="card-price paid">$${event.price.min?.toFixed(0) || '?'}+</span>`;
+
+  const time = event.start_time
+    ? new Date(event.start_time).toLocaleDateString('en-US', { weekday:'short', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+    : 'Time TBD';
+
+  const image = event.image_url
+    ? `<img src="${event.image_url}" alt="${event.title}" onerror="this.parentElement.innerHTML='🎉'" />`
+    : '🎉';
+
+  const hot = event.hot ? '<span class="card-hot">🔥 Trending</span>' : '';
+  const dist = event.venue.distance_miles ? `📍 ${event.venue.distance_miles.toFixed(1)} mi away` : '';
+
+  return `
+    <a href="${event.url || '#'}" target="_blank" class="event-card">
+      <div class="card-image">${image}</div>
+      <div class="card-body">
+        <div class="card-top">
+          <span class="card-category">${event.category || 'Event'}</span>
+          ${hot}
+        </div>
+        <div class="card-title">${event.title}</div>
+        <div class="card-venue">📍 ${event.venue.name || 'Venue TBD'} · ${event.venue.city || ''}</div>
+        <div class="card-footer">
+          <div>
+            <div class="card-time">🕐 ${time}</div>
+            <div class="card-attending">👥 ${event.attending} going · ${dist}</div>
+          </div>
+          ${price}
+        </div>
+        <div class="card-source">via ${event.source}</div>
+      </div>
+    </a>`;
+}
+
+function showLoading() {
+  document.getElementById('eventsContainer').innerHTML = `
+    <div class="loading">
+      <div class="spinner"></div>
+      <p>Finding events near you...</p>
+    </div>`;
+}
+
+function showError() {
+  document.getElementById('eventsContainer').innerHTML = `
+    <div class="empty">
+      <div class="empty-icon">⚠️</div>
+      <p>Something went wrong. Please try again.</p>
+    </div>`;
+}
+</script>
+</body>
+</html>
+{{ end }}
